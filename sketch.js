@@ -33,7 +33,7 @@ function setup() {
   const dotScaler = windowWidth / 4;
   dotSize = windowWidth > windowHeight ? windowWidth / dotScaler : windowHeight / dotScaler;
 
-  noiseSeed(0);
+  noiseSeed(1);
 }
 
 function draw() {
@@ -65,6 +65,8 @@ function draw() {
       pop();
     }
   }
+
+  xOffset += 0.01;
 }
 
 function generateMarchingSquares() {
@@ -73,12 +75,12 @@ function generateMarchingSquares() {
   // The noise multiplier specifies how fast the noise moves
   dotArr = [];
 
-  const noiseMovementMultiplier = 0.1;
+  const noiseMovementMultiplier = 0.05;
   for (let xPos = 0; xPos <= totalBlocksWidth; xPos++) {
     let arrRow = [];
 
     for (let yPos = 0; yPos <= totalBlocksHeight; yPos++) {
-      const tempVal = noise(xPos * noiseMovementMultiplier + xOffset, yPos * noiseMovementMultiplier);
+      const tempVal = noise(xPos * noiseMovementMultiplier + xOffset, yPos * noiseMovementMultiplier, xOffset);
       arrRow.push(tempVal);
     }
 
@@ -104,8 +106,8 @@ function drawEdge(xPos, yPos) {
 
 const division = 4;
 const setColor = function () {
-  fill(255, 255, 0);
-  stroke(255, 255, 0);
+  fill('#4361ee');
+  stroke(0);
 };
 
 // The lookup table determining which edges should be drawn
@@ -116,96 +118,193 @@ lookUpTable = {
     const newYVal = lerp(0, blocksHeight / division, bottomLeft - topLeft);
     const newXVal = lerp(blocksWidth / division, 0, bottomLeft - bottomRight);
 
-    line(-halfWidth, newYVal, -newXVal, halfHeight);
+    setColor();
+
+    beginShape();
+    vertex(-halfWidth, newYVal);
+    vertex(-newXVal, halfHeight);
+    vertex(-halfWidth, halfHeight);
+    endShape(closed);
   },
   2: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYVal = lerp(0, blocksHeight / division, bottomRight - topRight);
     const newXVal = lerp(blocksWidth / division, 0, bottomRight - bottomLeft);
 
-    line(newXVal, halfHeight, halfWidth, newYVal);
+    setColor();
+
+    beginShape();
+    vertex(newXVal, halfHeight);
+    vertex(halfWidth, newYVal);
+    vertex(halfWidth, halfHeight);
+    endShape(closed);
   },
   3: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYValLeft = lerp(0, blocksHeight / division, bottomLeft - topLeft);
     const newYValRight = lerp(0, blocksHeight / division, bottomRight - topRight);
 
-    line(-halfWidth, newYValLeft, halfWidth, newYValRight);
+    setColor();
+
+    beginShape();
+    vertex(-halfWidth, newYValLeft);
+    vertex(halfWidth, newYValRight);
+    vertex(halfWidth, halfHeight);
+    vertex(-halfWidth, halfHeight);
+    endShape(closed);
   },
   4: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYVal = lerp(0, blocksHeight / division, topRight - bottomRight);
     const newXVal = lerp(blocksWidth / division, 0, topRight - topLeft);
 
-    line(newXVal, -halfHeight, halfWidth, -newYVal);
+    setColor();
+
+    beginShape();
+    vertex(newXVal, -halfHeight);
+    vertex(halfWidth, -newYVal);
+    vertex(halfWidth, -halfHeight);
+    endShape(closed);
   },
   5: function (topLeft, topRight, bottomRight, bottomLeft) {
-    let newYVal = lerp(0, blocksHeight / division, bottomLeft - topLeft);
-    let newXVal = lerp(blocksWidth / division, 0, topRight - topLeft);
+    const newYVal = lerp(0, blocksHeight / division, bottomLeft - topLeft);
+    const newXVal = lerp(blocksWidth / division, 0, topRight - topLeft);
 
-    line(newXVal, -halfHeight, -halfWidth, newYVal);
+    const newYValNew = lerp(0, blocksHeight / division, topRight - bottomRight);
+    const newXValNew = lerp(blocksWidth / division, 0, bottomLeft - bottomRight);
 
-    newYVal = lerp(0, blocksHeight / division, topRight - bottomRight);
-    newXVal = lerp(blocksWidth / division, 0, bottomLeft - bottomRight);
+    setColor();
 
-    line(-newXVal, halfHeight, halfWidth, -newYVal);
+    beginShape();
+    vertex(newXVal, -halfHeight);
+    vertex(-halfWidth, newYVal);
+    vertex(-halfWidth, halfHeight);
+    vertex(-newXValNew, halfHeight);
+    vertex(halfWidth, -newYValNew);
+    vertex(halfWidth, -halfHeight);
+    endShape(closed);
   },
   6: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newXValTop = lerp(blocksWidth / division, 0, topRight - topLeft);
     const newXValBottom = lerp(blocksWidth / division, 0, bottomRight - bottomLeft);
 
-    line(newXValBottom, halfHeight, newXValTop, -halfHeight);
+    setColor();
+
+    beginShape();
+    vertex(newXValBottom, halfHeight);
+    vertex(newXValTop, -halfHeight);
+    vertex(halfWidth, -halfHeight);
+    vertex(halfWidth, halfHeight);
+    endShape(closed);
   },
   7: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYVal = lerp(0, blocksHeight / division, bottomLeft - topLeft);
     const newXVal = lerp(blocksWidth / division, 0, topRight - topLeft);
 
-    line(-halfWidth, newYVal, newXVal, -halfHeight);
+    setColor();
+
+    beginShape();
+    vertex(-halfWidth, newYVal);
+    vertex(newXVal, -halfHeight);
+    vertex(halfWidth, -halfHeight);
+    vertex(halfWidth, halfHeight);
+    vertex(-halfWidth, halfHeight);
+    endShape(closed);
   },
   8: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYVal = lerp(0, blocksHeight / division, topLeft - bottomLeft);
     const newXVal = lerp(blocksWidth / division, 0, topLeft - topRight);
 
-    line(-halfWidth, newYVal, -newXVal, -halfHeight);
+    setColor();
+
+    beginShape();
+    vertex(-halfWidth, newYVal);
+    vertex(-newXVal, -halfHeight);
+    vertex(-halfWidth, -halfHeight);
+    endShape(closed);
   },
   9: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newXValTop = lerp(blocksWidth / division, 0, topLeft - topRight);
     const newXValBottom = lerp(blocksWidth / division, 0, bottomLeft - bottomRight);
 
-    line(-newXValBottom, halfHeight, -newXValTop, -halfHeight);
+    setColor();
+
+    beginShape();
+    vertex(-newXValBottom, halfHeight);
+    vertex(-newXValTop, -halfHeight);
+    vertex(-halfWidth, -halfHeight);
+    vertex(-halfWidth, halfHeight);
+    endShape(closed);
   },
-  //DO HERE
   10: function (topLeft, topRight, bottomRight, bottomLeft) {
-    let newYVal = lerp(0, blocksHeight / division, topLeft - bottomLeft);
-    let newXVal = lerp(blocksWidth / division, 0, bottomRight - bottomLeft);
+    const newYVal = lerp(0, blocksHeight / division, topLeft - bottomLeft);
+    const newXVal = lerp(blocksWidth / division, 0, bottomRight - bottomLeft);
 
-    line(-halfWidth, -newYVal, newXVal, halfHeight);
+    const newYValNew = lerp(0, blocksHeight / division, bottomRight - topRight);
+    const newXValNew = lerp(blocksWidth / division, 0, topLeft - topRight);
 
-    newYVal = lerp(0, blocksHeight / division, bottomRight - topRight);
-    newXVal = lerp(blocksWidth / division, 0, topLeft - topRight);
+    setColor();
 
-    line(-newXVal, -halfHeight, halfWidth, newYVal);
+    beginShape();
+    vertex(-halfWidth, -newYVal);
+    vertex(newXVal, halfHeight);
+    vertex(halfWidth, halfHeight);
+    vertex(halfWidth, newYValNew);
+    vertex(-newXValNew, -halfHeight);
+    vertex(-halfWidth, -halfHeight);
+    endShape(closed);
   },
   11: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYVal = lerp(0, blocksHeight / division, bottomRight - topRight);
     const newXVal = lerp(blocksWidth / division, 0, topLeft - topRight);
 
-    line(-newXVal, -halfHeight, halfWidth, newYVal);
+    setColor();
+
+    beginShape();
+    vertex(-newXVal, -halfHeight);
+    vertex(halfWidth, newYVal);
+    vertex(halfWidth, halfHeight);
+    vertex(-halfWidth, halfHeight);
+    vertex(-halfWidth, -halfHeight);
+    endShape(closed);
   },
   12: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYValLeft = lerp(0, blocksHeight / division, topLeft - bottomLeft);
     const newYValRight = lerp(0, blocksHeight / division, topRight - bottomRight);
 
-    line(-halfWidth, -newYValLeft, halfWidth, -newYValRight);
+    setColor();
+
+    beginShape();
+    vertex(-halfWidth, -newYValLeft);
+    vertex(halfWidth, -newYValRight);
+    vertex(halfWidth, -halfHeight);
+    vertex(-halfWidth, -halfHeight);
+    endShape(closed);
   },
   13: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYVal = lerp(0, blocksHeight / division, topRight - bottomRight);
     const newXVal = lerp(blocksWidth / division, 0, bottomLeft - bottomRight);
 
-    line(-newXVal, halfHeight, halfWidth, -newYVal);
+    setColor();
+
+    beginShape();
+    vertex(-newXVal, halfHeight);
+    vertex(halfWidth, -newYVal);
+    vertex(halfWidth, -halfHeight);
+    vertex(-halfWidth, -halfHeight);
+    vertex(-halfWidth, halfHeight);
+    endShape(closed);
   },
   14: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYVal = lerp(0, blocksHeight / division, topLeft - bottomLeft);
     const newXVal = lerp(blocksWidth / division, 0, bottomRight - bottomLeft);
 
-    line(-halfWidth, -newYVal, newXVal, halfHeight);
+    setColor();
+
+    beginShape();
+    vertex(-halfWidth, -newYVal);
+    vertex(newXVal, halfHeight);
+    vertex(halfWidth, halfHeight);
+    vertex(halfWidth, -halfHeight);
+    vertex(-halfWidth, -halfHeight);
+    endShape(closed);
   },
   15: function (topLeft, topRight, bottomRight, bottomLeft) {
     setColor();
