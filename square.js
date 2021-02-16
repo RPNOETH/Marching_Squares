@@ -9,7 +9,7 @@ class Square {
   }
 
   // determines the values of the corners based on the position of the square
-  createCornerValues(simplex) {
+  createCornerValues() {
     this.cornerValues = [];
 
     // How fast you cycle over the noise
@@ -20,7 +20,7 @@ class Square {
       for (let y = 0; y < 2; y++) {
         const cornerPos = createVector(x * this.size.x + this.position.x + this.offset.x, y * this.size.y + this.position.y + this.offset.y);
 
-        this.cornerValues[x][y] = simplex.noise2D(cornerPos.x * noiseMultiplier, cornerPos.y * noiseMultiplier);
+        this.cornerValues[x][y] = map(noise(cornerPos.x * noiseMultiplier, cornerPos.y * noiseMultiplier, this.offset.z), 0, 1, -1, 1);
       }
     }
   }

@@ -2,16 +2,14 @@
 let squareArr = [];
 
 // Sets the resolution for the squares
-const res = 80;
+const res = 20;
 
 // Offset for the noise function
 let xOffset = 1;
 
-const simplex = new SimplexNoise();
-
 function setup() {
-  createCanvas(windowWidth / 3, windowHeight / 2);
-  frameRate(5);
+  createCanvas(windowWidth, windowHeight / 2);
+  frameRate(20);
 
   createAllSqaures();
 }
@@ -19,26 +17,24 @@ function setup() {
 function draw() {
   background(0);
 
-  createNewCol();
+  // createNewCol();
+  createAllSqaures();
 
   squareArr.forEach((arr) => {
     arr.forEach((s) => {
       if (s) {
         // s.display();
 
-        stroke(0, 255, 0);
-        s.drawEdge(0, 0);
-
-        stroke(255, 0, 0);
-        s.drawEdge(0, -0.5);
-
-        stroke(0, 0, 255);
-        s.drawEdge(0, 0.5);
+        for (let i = 0.9; i > -1; i -= 0.4) {
+          stroke(255 * map(i, -1, 1, 0, 1));
+          s.drawEdge(0, i);
+        }
       }
     });
   });
 
   console.log(frameRate());
+  xOffset += 0.01;
 }
 
 function createNewCol() {
@@ -60,7 +56,7 @@ function createNewCol() {
     const pos = createVector((res - 1) * boxWidth, y * boxHeight);
 
     squareArr[res - 1][y] = new Square(pos, createVector(boxWidth, boxHeight), createVector(xOffset * boxWidth, 0, 0));
-    squareArr[res - 1][y].createCornerValues(simplex);
+    squareArr[res - 1][y].createCornerValues();
   }
 
   xOffset += 1;
@@ -77,8 +73,8 @@ function createAllSqaures() {
     for (let y = 0; y < res; y++) {
       const pos = createVector(x * boxWidth, y * boxHeight);
 
-      const newSquare = new Square(pos, createVector(boxWidth, boxHeight), createVector(0, 0, 0));
-      newSquare.createCornerValues(simplex);
+      const newSquare = new Square(pos, createVector(boxWidth, boxHeight), createVector(0, 0, xOffset));
+      newSquare.createCornerValues();
 
       squareArr[x][y] = newSquare;
     }
