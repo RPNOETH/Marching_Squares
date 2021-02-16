@@ -9,18 +9,18 @@ class Square {
   }
 
   // determines the values of the corners based on the position of the square
-  createCornerValues() {
+  createCornerValues(simplex) {
     this.cornerValues = [];
 
     // How fast you cycle over the noise
-    const noiseMultiplier = 0.01;
+    const noiseMultiplier = 0.0075;
 
     for (let x = 0; x < 2; x++) {
       this.cornerValues[x] = [];
       for (let y = 0; y < 2; y++) {
         const cornerPos = createVector(x * this.size.x + this.position.x + this.offset.x, y * this.size.y + this.position.y + this.offset.y);
 
-        this.cornerValues[x][y] = noise(cornerPos.x * noiseMultiplier, cornerPos.y * noiseMultiplier);
+        this.cornerValues[x][y] = simplex.noise2D(cornerPos.x * noiseMultiplier, cornerPos.y * noiseMultiplier);
       }
     }
   }
@@ -28,20 +28,20 @@ class Square {
   // Converts the values of the corners to a single binary value
   // Starts at the top left corner adding 0 if less than 0.5 and 1 if more
   // Binary value is used to lookup the correct edge to construct
-  convertToBinary(cutoff) {
+  convertToBinary(cutoff, hOffest) {
     let finalString = '';
 
     // Adds binary values starting top left and proceeding clockwise
-    finalString += this.cornerValues[0][0] > cutoff ? '1' : '0';
-    finalString += this.cornerValues[1][0] > cutoff ? '1' : '0';
-    finalString += this.cornerValues[1][1] > cutoff ? '1' : '0';
-    finalString += this.cornerValues[0][1] > cutoff ? '1' : '0';
+    finalString += this.cornerValues[0][0] - hOffest > cutoff ? '1' : '0';
+    finalString += this.cornerValues[1][0] - hOffest > cutoff ? '1' : '0';
+    finalString += this.cornerValues[1][1] - hOffest > cutoff ? '1' : '0';
+    finalString += this.cornerValues[0][1] - hOffest > cutoff ? '1' : '0';
 
     return parseInt(finalString, 2);
   }
 
-  drawEdge(cutoff) {
-    const lookupIndex = this.convertToBinary(cutoff);
+  drawEdge(cutoff, hOffest) {
+    const lookupIndex = this.convertToBinary(cutoff, hOffest);
 
     // Place holders for the halfway points between corners
     // a between top left and right
@@ -54,27 +54,27 @@ class Square {
     const d = createVector(0, this.size.y / 2);
 
     // Each corner value
-    const c0 = this.cornerValues[0][0];
-    const c1 = this.cornerValues[1][0];
-    const c2 = this.cornerValues[1][1];
-    const c3 = this.cornerValues[0][1];
+    const c0 = this.cornerValues[0][0] - hOffest;
+    const c1 = this.cornerValues[1][0] - hOffest;
+    const c2 = this.cornerValues[1][1] - hOffest;
+    const c3 = this.cornerValues[0][1] - hOffest;
 
     // Converted A
-    const aConverted = createVector(this.size.x * (1 - c0 / (c0 + c1)), 0);
+    const aConverted = createVector((this.size.x * c0) / (c0 - c1), 0);
 
     // Converted B
-    const bConverted = createVector(this.size.x, this.size.y * (1 - c1 / (c1 + c2)));
+    const bConverted = createVector(this.size.x, (this.size.y * c1) / (c1 - c2));
 
     // Converted C
-    const cConverted = createVector((this.size.x * c2) / (c2 + c3), this.size.y);
+    const cConverted = createVector(this.size.x * (1 - c2 / (c2 - c3)), this.size.y);
 
     // Converted D
-    const dConverted = createVector(0, (this.size.y * c3) / (c3 + c0));
+    const dConverted = createVector(0, this.size.y * (1 - c3 / (c3 - c0)));
 
     push();
     translate(this.position.x, this.position.y);
     strokeWeight(1);
-    lookupTable[lookupIndex](a, b, c, d);
+    lookupTable[lookupIndex](aConverted, bConverted, cConverted, dConverted);
     pop();
   }
 
@@ -85,10 +85,10 @@ class Square {
 
     for (let x = 0; x < 2; x++) {
       for (let y = 0; y < 2; y++) {
-        const val = this.cornerValues[x][y];
+        const val = map(this.cornerValues[x][y], -1, 1, 0, 255);
 
-        stroke(val * 255);
-        fill(val * 255);
+        stroke(val);
+        fill(val);
 
         push();
         translate(this.position.x, this.position.y);
