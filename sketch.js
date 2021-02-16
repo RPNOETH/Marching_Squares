@@ -5,8 +5,8 @@ let dotSize = undefined;
 let dotArr = [];
 
 // Determines the amount of blocks in the horizontal axis as well as the vertical axis
-const totalBlocksWidth = 50;
-const totalBlocksHeight = 50;
+const totalBlocksWidth = 45;
+const totalBlocksHeight = 45;
 
 // Used for drawing the blocks
 let blocksWidth;
@@ -124,7 +124,7 @@ lookUpTable = {
     vertex(-halfWidth, newYVal);
     vertex(-newXVal, halfHeight);
     vertex(-halfWidth, halfHeight);
-    endShape(closed);
+    endShape(CLOSE);
   },
   2: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYVal = lerp(0, blocksHeight / division, bottomRight - topRight);
@@ -136,7 +136,7 @@ lookUpTable = {
     vertex(newXVal, halfHeight);
     vertex(halfWidth, newYVal);
     vertex(halfWidth, halfHeight);
-    endShape(closed);
+    endShape(CLOSE);
   },
   3: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYValLeft = lerp(0, blocksHeight / division, bottomLeft - topLeft);
@@ -149,7 +149,7 @@ lookUpTable = {
     vertex(halfWidth, newYValRight);
     vertex(halfWidth, halfHeight);
     vertex(-halfWidth, halfHeight);
-    endShape(closed);
+    endShape(CLOSE);
   },
   4: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYVal = lerp(0, blocksHeight / division, topRight - bottomRight);
@@ -161,7 +161,7 @@ lookUpTable = {
     vertex(newXVal, -halfHeight);
     vertex(halfWidth, -newYVal);
     vertex(halfWidth, -halfHeight);
-    endShape(closed);
+    endShape(CLOSE);
   },
   5: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYVal = lerp(0, blocksHeight / division, bottomLeft - topLeft);
@@ -179,7 +179,7 @@ lookUpTable = {
     vertex(-newXValNew, halfHeight);
     vertex(halfWidth, -newYValNew);
     vertex(halfWidth, -halfHeight);
-    endShape(closed);
+    endShape(CLOSE);
   },
   6: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newXValTop = lerp(blocksWidth / division, 0, topRight - topLeft);
@@ -192,7 +192,7 @@ lookUpTable = {
     vertex(newXValTop, -halfHeight);
     vertex(halfWidth, -halfHeight);
     vertex(halfWidth, halfHeight);
-    endShape(closed);
+    endShape(CLOSE);
   },
   7: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYVal = lerp(0, blocksHeight / division, bottomLeft - topLeft);
@@ -206,7 +206,7 @@ lookUpTable = {
     vertex(halfWidth, -halfHeight);
     vertex(halfWidth, halfHeight);
     vertex(-halfWidth, halfHeight);
-    endShape(closed);
+    endShape(CLOSE);
   },
   8: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYVal = lerp(0, blocksHeight / division, topLeft - bottomLeft);
@@ -218,7 +218,7 @@ lookUpTable = {
     vertex(-halfWidth, newYVal);
     vertex(-newXVal, -halfHeight);
     vertex(-halfWidth, -halfHeight);
-    endShape(closed);
+    endShape(CLOSE);
   },
   9: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newXValTop = lerp(blocksWidth / division, 0, topLeft - topRight);
@@ -231,7 +231,7 @@ lookUpTable = {
     vertex(-newXValTop, -halfHeight);
     vertex(-halfWidth, -halfHeight);
     vertex(-halfWidth, halfHeight);
-    endShape(closed);
+    endShape(CLOSE);
   },
   10: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYVal = lerp(0, blocksHeight / division, topLeft - bottomLeft);
@@ -249,7 +249,7 @@ lookUpTable = {
     vertex(halfWidth, newYValNew);
     vertex(-newXValNew, -halfHeight);
     vertex(-halfWidth, -halfHeight);
-    endShape(closed);
+    endShape(CLOSE);
   },
   11: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYVal = lerp(0, blocksHeight / division, bottomRight - topRight);
@@ -263,7 +263,7 @@ lookUpTable = {
     vertex(halfWidth, halfHeight);
     vertex(-halfWidth, halfHeight);
     vertex(-halfWidth, -halfHeight);
-    endShape(closed);
+    endShape(CLOSE);
   },
   12: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYValLeft = lerp(0, blocksHeight / division, topLeft - bottomLeft);
@@ -276,7 +276,7 @@ lookUpTable = {
     vertex(halfWidth, -newYValRight);
     vertex(halfWidth, -halfHeight);
     vertex(-halfWidth, -halfHeight);
-    endShape(closed);
+    endShape(CLOSE);
   },
   13: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYVal = lerp(0, blocksHeight / division, topRight - bottomRight);
@@ -290,7 +290,7 @@ lookUpTable = {
     vertex(halfWidth, -halfHeight);
     vertex(-halfWidth, -halfHeight);
     vertex(-halfWidth, halfHeight);
-    endShape(closed);
+    endShape(CLOSE);
   },
   14: function (topLeft, topRight, bottomRight, bottomLeft) {
     const newYVal = lerp(0, blocksHeight / division, topLeft - bottomLeft);
@@ -304,7 +304,7 @@ lookUpTable = {
     vertex(halfWidth, halfHeight);
     vertex(halfWidth, -halfHeight);
     vertex(-halfWidth, -halfHeight);
-    endShape(closed);
+    endShape(CLOSE);
   },
   15: function (topLeft, topRight, bottomRight, bottomLeft) {
     setColor();
@@ -314,6 +314,6 @@ lookUpTable = {
     vertex(halfWidth, -halfHeight);
     vertex(halfWidth, halfHeight);
     vertex(-halfWidth, halfHeight);
-    endShape(closed);
+    endShape(CLOSE);
   },
 };
