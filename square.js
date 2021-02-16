@@ -18,13 +18,9 @@ class Square {
     for (let x = 0; x < 2; x++) {
       this.cornerValues[x] = [];
       for (let y = 0; y < 2; y++) {
-        const cornerPos = createVector(x * this.size.x + this.position.x, y * this.size.y + this.position.y);
+        const cornerPos = createVector(x * this.size.x + this.position.x + this.offset.x, y * this.size.y + this.position.y + this.offset.y);
 
-        this.cornerValues[x][y] = noise(
-          (cornerPos.x + this.offset.x) * noiseMultiplier,
-          (cornerPos.y + this.offset.y) * noiseMultiplier,
-          this.offset.z * noiseMultiplier
-        );
+        this.cornerValues[x][y] = noise(cornerPos.x * noiseMultiplier, cornerPos.y * noiseMultiplier);
       }
     }
   }
@@ -32,20 +28,20 @@ class Square {
   // Converts the values of the corners to a single binary value
   // Starts at the top left corner adding 0 if less than 0.5 and 1 if more
   // Binary value is used to lookup the correct edge to construct
-  convertToBinary() {
+  convertToBinary(cutoff) {
     let finalString = '';
 
     // Adds binary values starting top left and proceeding clockwise
-    finalString += this.cornerValues[0][0] > 0.5 ? '1' : '0';
-    finalString += this.cornerValues[1][0] > 0.5 ? '1' : '0';
-    finalString += this.cornerValues[1][1] > 0.5 ? '1' : '0';
-    finalString += this.cornerValues[0][1] > 0.5 ? '1' : '0';
+    finalString += this.cornerValues[0][0] > cutoff ? '1' : '0';
+    finalString += this.cornerValues[1][0] > cutoff ? '1' : '0';
+    finalString += this.cornerValues[1][1] > cutoff ? '1' : '0';
+    finalString += this.cornerValues[0][1] > cutoff ? '1' : '0';
 
     return parseInt(finalString, 2);
   }
 
-  drawEdge() {
-    const lookupIndex = this.convertToBinary();
+  drawEdge(cutoff) {
+    const lookupIndex = this.convertToBinary(cutoff);
 
     // Place holders for the halfway points between corners
     // a between top left and right
@@ -57,10 +53,27 @@ class Square {
     const c = createVector(this.size.x / 2, this.size.y);
     const d = createVector(0, this.size.y / 2);
 
+    // Each corner value
+    const c0 = this.cornerValues[0][0];
+    const c1 = this.cornerValues[1][0];
+    const c2 = this.cornerValues[1][1];
+    const c3 = this.cornerValues[0][1];
+
+    // Converted A
+    const aConverted = createVector(this.size.x * (1 - c0 / (c0 + c1)), 0);
+
+    // Converted B
+    const bConverted = createVector(this.size.x, this.size.y * (1 - c1 / (c1 + c2)));
+
+    // Converted C
+    const cConverted = createVector((this.size.x * c2) / (c2 + c3), this.size.y);
+
+    // Converted D
+    const dConverted = createVector(0, (this.size.y * c3) / (c3 + c0));
+
     push();
     translate(this.position.x, this.position.y);
     strokeWeight(1);
-    stroke(255);
     lookupTable[lookupIndex](a, b, c, d);
     pop();
   }

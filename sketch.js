@@ -5,7 +5,7 @@ let squareArr = [];
 const res = 50;
 
 // Offset for the noise function
-let xOffset = 0;
+let xOffset = 1;
 
 function setup() {
   createCanvas(windowWidth / 3, windowHeight / 2);
@@ -25,10 +25,14 @@ function draw() {
     arr.forEach((s) => {
       if (s) {
         // s.display();
-        s.drawEdge();
+
+        stroke(0, 255, 0);
+        s.drawEdge(0.5);
       }
     });
   });
+
+  console.log(frameRate());
 }
 
 function createNewCol() {
@@ -67,7 +71,7 @@ function createAllSqaures() {
     for (let y = 0; y < res; y++) {
       const pos = createVector(x * boxWidth, y * boxHeight);
 
-      const newSquare = new Square(pos, createVector(boxWidth, boxHeight), createVector(xOffset, 0, 0));
+      const newSquare = new Square(pos, createVector(boxWidth, boxHeight), createVector(0, 0, 0));
       newSquare.createCornerValues();
 
       squareArr[x][y] = newSquare;
