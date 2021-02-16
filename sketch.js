@@ -1,319 +1,82 @@
-// Size of the visual representation of the corners of the cubes
-let dotSize = undefined;
+// Stores an array of sqaures classes
+let squareArr = [];
 
-// Contains each corner of the square
-let dotArr = [];
+// Sets the resolution for the squares
+const res = 20;
 
-// Determines the amount of blocks in the horizontal axis as well as the vertical axis
-const totalBlocksWidth = 45;
-const totalBlocksHeight = 45;
-
-// Used for drawing the blocks
-let blocksWidth;
-let blocksHeight;
-let halfWidth;
-let halfHeight;
-
-// Used to make the noise move (Creates illusion of moving across a map)
-let xOffset = 0;
+// Offset for the noise function
+let xOffset = 1;
 
 function setup() {
-  // Sets up the canvas to take only 1 third of the display screen
-  const newWidth = windowWidth / 3;
-  const newHeight = windowHeight / 2;
-  createCanvas(newWidth, newHeight);
+  createCanvas(windowWidth, windowHeight / 2);
+  frameRate(20);
 
-  // Determines neccesary spacing
-  blocksWidth = width / totalBlocksWidth;
-  blocksHeight = height / totalBlocksHeight;
-  halfWidth = blocksWidth / 2;
-  halfHeight = blocksHeight / 2;
-
-  // Sets up and dynamic dot size to visualize cube corners
-  const dotScaler = windowWidth / 4;
-  dotSize = windowWidth > windowHeight ? windowWidth / dotScaler : windowHeight / dotScaler;
-
-  noiseSeed(1);
+  createAllSqaures();
 }
 
 function draw() {
   background(0);
-  strokeWeight(dotSize);
 
-  generateMarchingSquares();
+  // createNewCol();
+  createAllSqaures();
 
-  // Displays each dot based on the value assigned to them
-  // 0 is black
-  // 1 is white
-  // for (let xPos = 0; xPos <= totalBlocksWidth; xPos++) {
-  //   for (let yPos = 0; yPos <= totalBlocksHeight; yPos++) {
-  //     stroke(dotArr[xPos][yPos] * 255);
-  //     point(blocksWidth * xPos, blocksHeight * yPos);
-  //   }
-  // }
+  squareArr.forEach((arr) => {
+    arr.forEach((s) => {
+      if (s) {
+        // s.display();
 
-  //Draws sqaures
-  for (let xPos = 1; xPos <= totalBlocksWidth; xPos++) {
-    for (let yPos = 1; yPos <= totalBlocksHeight; yPos++) {
-      push();
-      translate(blocksWidth * xPos - halfWidth, blocksHeight * yPos - halfHeight);
-      stroke(255, 255, 0);
-      strokeWeight(1);
+        for (let i = 0.9; i > -1; i -= 0.4) {
+          stroke(255 * map(i, -1, 1, 0, 1));
+          s.drawEdge(0, i);
+        }
+      }
+    });
+  });
 
-      drawEdge(xPos - 1, yPos - 1);
-
-      pop();
-    }
-  }
-
+  console.log(frameRate());
   xOffset += 0.01;
 }
 
-function generateMarchingSquares() {
-  // Cycles through the amount of corners on the grid, giving each a random noise smoothed value
-  // This value represents wether the dot is considered active of not
-  // The noise multiplier specifies how fast the noise moves
-  dotArr = [];
+function createNewCol() {
+  for (let x = 0; x < res - 1; x++) {
+    for (let y = 0; y < res; y++) {
+      const oldSqaure = squareArr[x][y];
 
-  const noiseMovementMultiplier = 0.05;
-  for (let xPos = 0; xPos <= totalBlocksWidth; xPos++) {
-    let arrRow = [];
+      const newSqaure = new Square(oldSqaure.position, oldSqaure.size, oldSqaure.offset);
+      newSqaure.cornerValues = squareArr[x + 1][y].cornerValues;
 
-    for (let yPos = 0; yPos <= totalBlocksHeight; yPos++) {
-      const tempVal = noise(xPos * noiseMovementMultiplier + xOffset, yPos * noiseMovementMultiplier, xOffset);
-      arrRow.push(tempVal);
+      squareArr[x][y] = newSqaure;
     }
+  }
 
-    dotArr.push(arrRow);
+  const boxWidth = width / res;
+  const boxHeight = height / res;
+
+  for (let y = 0; y < res; y++) {
+    const pos = createVector((res - 1) * boxWidth, y * boxHeight);
+
+    squareArr[res - 1][y] = new Square(pos, createVector(boxWidth, boxHeight), createVector(xOffset * boxWidth, 0, 0));
+    squareArr[res - 1][y].createCornerValues();
+  }
+
+  xOffset += 1;
+}
+
+function createAllSqaures() {
+  squareArr = [];
+
+  const boxWidth = width / res;
+  const boxHeight = height / res;
+
+  for (let x = 0; x < res; x++) {
+    squareArr[x] = [];
+    for (let y = 0; y < res; y++) {
+      const pos = createVector(x * boxWidth, y * boxHeight);
+
+      const newSquare = new Square(pos, createVector(boxWidth, boxHeight), createVector(0, 0, xOffset));
+      newSquare.createCornerValues();
+
+      squareArr[x][y] = newSquare;
+    }
   }
 }
-
-function drawEdge(xPos, yPos) {
-  // Cycles through each square and determines an lookup index
-  // This is acomplished by creating a binary value from the corner values
-  // This binary value is then converted into a decimal value which is compared
-  // to the lookup table to determine the correct edges needed
-  const topRight = dotArr[xPos + 1][yPos];
-  const bottomRight = dotArr[xPos + 1][yPos + 1];
-  const bottomLeft = dotArr[xPos][yPos + 1];
-  const topLeft = dotArr[xPos][yPos];
-
-  finalBinaryString = `${round(topLeft)}${round(topRight)}${round(bottomRight)}${round(bottomLeft)}`;
-  const finalVal = parseInt(finalBinaryString, 2);
-
-  lookUpTable[finalVal](topLeft, topRight, bottomRight, bottomLeft);
-}
-
-const division = 4;
-const setColor = function () {
-  fill('#4361ee');
-  stroke(0);
-};
-
-// The lookup table determining which edges should be drawn
-// TODO: Fix lookup table to fill values
-lookUpTable = {
-  0: function (topLeft, topRight, bottomRight, bottomLeft) {},
-  1: function (topLeft, topRight, bottomRight, bottomLeft) {
-    const newYVal = lerp(0, blocksHeight / division, bottomLeft - topLeft);
-    const newXVal = lerp(blocksWidth / division, 0, bottomLeft - bottomRight);
-
-    setColor();
-
-    beginShape();
-    vertex(-halfWidth, newYVal);
-    vertex(-newXVal, halfHeight);
-    vertex(-halfWidth, halfHeight);
-    endShape(CLOSE);
-  },
-  2: function (topLeft, topRight, bottomRight, bottomLeft) {
-    const newYVal = lerp(0, blocksHeight / division, bottomRight - topRight);
-    const newXVal = lerp(blocksWidth / division, 0, bottomRight - bottomLeft);
-
-    setColor();
-
-    beginShape();
-    vertex(newXVal, halfHeight);
-    vertex(halfWidth, newYVal);
-    vertex(halfWidth, halfHeight);
-    endShape(CLOSE);
-  },
-  3: function (topLeft, topRight, bottomRight, bottomLeft) {
-    const newYValLeft = lerp(0, blocksHeight / division, bottomLeft - topLeft);
-    const newYValRight = lerp(0, blocksHeight / division, bottomRight - topRight);
-
-    setColor();
-
-    beginShape();
-    vertex(-halfWidth, newYValLeft);
-    vertex(halfWidth, newYValRight);
-    vertex(halfWidth, halfHeight);
-    vertex(-halfWidth, halfHeight);
-    endShape(CLOSE);
-  },
-  4: function (topLeft, topRight, bottomRight, bottomLeft) {
-    const newYVal = lerp(0, blocksHeight / division, topRight - bottomRight);
-    const newXVal = lerp(blocksWidth / division, 0, topRight - topLeft);
-
-    setColor();
-
-    beginShape();
-    vertex(newXVal, -halfHeight);
-    vertex(halfWidth, -newYVal);
-    vertex(halfWidth, -halfHeight);
-    endShape(CLOSE);
-  },
-  5: function (topLeft, topRight, bottomRight, bottomLeft) {
-    const newYVal = lerp(0, blocksHeight / division, bottomLeft - topLeft);
-    const newXVal = lerp(blocksWidth / division, 0, topRight - topLeft);
-
-    const newYValNew = lerp(0, blocksHeight / division, topRight - bottomRight);
-    const newXValNew = lerp(blocksWidth / division, 0, bottomLeft - bottomRight);
-
-    setColor();
-
-    beginShape();
-    vertex(newXVal, -halfHeight);
-    vertex(-halfWidth, newYVal);
-    vertex(-halfWidth, halfHeight);
-    vertex(-newXValNew, halfHeight);
-    vertex(halfWidth, -newYValNew);
-    vertex(halfWidth, -halfHeight);
-    endShape(CLOSE);
-  },
-  6: function (topLeft, topRight, bottomRight, bottomLeft) {
-    const newXValTop = lerp(blocksWidth / division, 0, topRight - topLeft);
-    const newXValBottom = lerp(blocksWidth / division, 0, bottomRight - bottomLeft);
-
-    setColor();
-
-    beginShape();
-    vertex(newXValBottom, halfHeight);
-    vertex(newXValTop, -halfHeight);
-    vertex(halfWidth, -halfHeight);
-    vertex(halfWidth, halfHeight);
-    endShape(CLOSE);
-  },
-  7: function (topLeft, topRight, bottomRight, bottomLeft) {
-    const newYVal = lerp(0, blocksHeight / division, bottomLeft - topLeft);
-    const newXVal = lerp(blocksWidth / division, 0, topRight - topLeft);
-
-    setColor();
-
-    beginShape();
-    vertex(-halfWidth, newYVal);
-    vertex(newXVal, -halfHeight);
-    vertex(halfWidth, -halfHeight);
-    vertex(halfWidth, halfHeight);
-    vertex(-halfWidth, halfHeight);
-    endShape(CLOSE);
-  },
-  8: function (topLeft, topRight, bottomRight, bottomLeft) {
-    const newYVal = lerp(0, blocksHeight / division, topLeft - bottomLeft);
-    const newXVal = lerp(blocksWidth / division, 0, topLeft - topRight);
-
-    setColor();
-
-    beginShape();
-    vertex(-halfWidth, newYVal);
-    vertex(-newXVal, -halfHeight);
-    vertex(-halfWidth, -halfHeight);
-    endShape(CLOSE);
-  },
-  9: function (topLeft, topRight, bottomRight, bottomLeft) {
-    const newXValTop = lerp(blocksWidth / division, 0, topLeft - topRight);
-    const newXValBottom = lerp(blocksWidth / division, 0, bottomLeft - bottomRight);
-
-    setColor();
-
-    beginShape();
-    vertex(-newXValBottom, halfHeight);
-    vertex(-newXValTop, -halfHeight);
-    vertex(-halfWidth, -halfHeight);
-    vertex(-halfWidth, halfHeight);
-    endShape(CLOSE);
-  },
-  10: function (topLeft, topRight, bottomRight, bottomLeft) {
-    const newYVal = lerp(0, blocksHeight / division, topLeft - bottomLeft);
-    const newXVal = lerp(blocksWidth / division, 0, bottomRight - bottomLeft);
-
-    const newYValNew = lerp(0, blocksHeight / division, bottomRight - topRight);
-    const newXValNew = lerp(blocksWidth / division, 0, topLeft - topRight);
-
-    setColor();
-
-    beginShape();
-    vertex(-halfWidth, -newYVal);
-    vertex(newXVal, halfHeight);
-    vertex(halfWidth, halfHeight);
-    vertex(halfWidth, newYValNew);
-    vertex(-newXValNew, -halfHeight);
-    vertex(-halfWidth, -halfHeight);
-    endShape(CLOSE);
-  },
-  11: function (topLeft, topRight, bottomRight, bottomLeft) {
-    const newYVal = lerp(0, blocksHeight / division, bottomRight - topRight);
-    const newXVal = lerp(blocksWidth / division, 0, topLeft - topRight);
-
-    setColor();
-
-    beginShape();
-    vertex(-newXVal, -halfHeight);
-    vertex(halfWidth, newYVal);
-    vertex(halfWidth, halfHeight);
-    vertex(-halfWidth, halfHeight);
-    vertex(-halfWidth, -halfHeight);
-    endShape(CLOSE);
-  },
-  12: function (topLeft, topRight, bottomRight, bottomLeft) {
-    const newYValLeft = lerp(0, blocksHeight / division, topLeft - bottomLeft);
-    const newYValRight = lerp(0, blocksHeight / division, topRight - bottomRight);
-
-    setColor();
-
-    beginShape();
-    vertex(-halfWidth, -newYValLeft);
-    vertex(halfWidth, -newYValRight);
-    vertex(halfWidth, -halfHeight);
-    vertex(-halfWidth, -halfHeight);
-    endShape(CLOSE);
-  },
-  13: function (topLeft, topRight, bottomRight, bottomLeft) {
-    const newYVal = lerp(0, blocksHeight / division, topRight - bottomRight);
-    const newXVal = lerp(blocksWidth / division, 0, bottomLeft - bottomRight);
-
-    setColor();
-
-    beginShape();
-    vertex(-newXVal, halfHeight);
-    vertex(halfWidth, -newYVal);
-    vertex(halfWidth, -halfHeight);
-    vertex(-halfWidth, -halfHeight);
-    vertex(-halfWidth, halfHeight);
-    endShape(CLOSE);
-  },
-  14: function (topLeft, topRight, bottomRight, bottomLeft) {
-    const newYVal = lerp(0, blocksHeight / division, topLeft - bottomLeft);
-    const newXVal = lerp(blocksWidth / division, 0, bottomRight - bottomLeft);
-
-    setColor();
-
-    beginShape();
-    vertex(-halfWidth, -newYVal);
-    vertex(newXVal, halfHeight);
-    vertex(halfWidth, halfHeight);
-    vertex(halfWidth, -halfHeight);
-    vertex(-halfWidth, -halfHeight);
-    endShape(CLOSE);
-  },
-  15: function (topLeft, topRight, bottomRight, bottomLeft) {
-    setColor();
-
-    beginShape();
-    vertex(-halfWidth, -halfHeight);
-    vertex(halfWidth, -halfHeight);
-    vertex(halfWidth, halfHeight);
-    vertex(-halfWidth, halfHeight);
-    endShape(CLOSE);
-  },
-};
