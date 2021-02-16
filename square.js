@@ -1,12 +1,11 @@
 class Square {
   // Create the object based on the position of the square
   // As well as the values of the corner positions
-  constructor(position, size) {
+  constructor(position, size, offset) {
     this.cornerValues = [];
     this.position = position;
     this.size = size;
-
-    this.createCornerValues();
+    this.offset = offset;
   }
 
   // determines the values of the corners based on the position of the square
@@ -14,14 +13,18 @@ class Square {
     this.cornerValues = [];
 
     // How fast you cycle over the noise
-    const noiseMultiplier = 0.5;
+    const noiseMultiplier = 0.01;
 
     for (let x = 0; x < 2; x++) {
       this.cornerValues[x] = [];
       for (let y = 0; y < 2; y++) {
         const cornerPos = createVector(x * this.size.x + this.position.x, y * this.size.y + this.position.y);
 
-        this.cornerValues[x][y] = noise(cornerPos.x * noiseMultiplier, cornerPos.y * noiseMultiplier);
+        this.cornerValues[x][y] = noise(
+          (cornerPos.x + this.offset.x) * noiseMultiplier,
+          (cornerPos.y + this.offset.y) * noiseMultiplier,
+          this.offset.z * noiseMultiplier
+        );
       }
     }
   }
@@ -38,8 +41,6 @@ class Square {
     finalString += this.cornerValues[1][1] > 0.5 ? '1' : '0';
     finalString += this.cornerValues[0][1] > 0.5 ? '1' : '0';
 
-    console.log(`${parseInt(finalString, 2)} -- ${finalString}`);
-    console.log(this.cornerValues);
     return parseInt(finalString, 2);
   }
 
@@ -67,14 +68,14 @@ class Square {
   // Displays the corners of the square according to their values
   // This is only for debugging purposes
   display() {
-    strokeWeight(5);
+    strokeWeight(3);
 
     for (let x = 0; x < 2; x++) {
       for (let y = 0; y < 2; y++) {
         const val = this.cornerValues[x][y];
 
-        stroke((val > 0.5 ? 1 : 0.25) * 255);
-        fill((val > 0.5 ? 1 : 0.25) * 255);
+        stroke(val * 255);
+        fill(val * 255);
 
         push();
         translate(this.position.x, this.position.y);
@@ -85,10 +86,12 @@ class Square {
   }
 }
 
+// Shorthand function for drawing a line between 2 vector points
 function vectorLine(pointA, pointB) {
   line(pointA.x, pointA.y, pointB.x, pointB.y);
 }
 
+// Lookup table for drawing the neccesary edges
 const lookupTable = {
   0: function () {},
   1: function (a, b, c, d) {
