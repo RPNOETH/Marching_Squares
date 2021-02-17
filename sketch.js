@@ -2,81 +2,91 @@
 let squareArr = [];
 
 // Sets the resolution for the squares
-const res = 20;
+const res = 25;
 
-// Offset for the noise function
-let xOffset = 1;
+// Offset for moving the sqaure map
+let xOffset = 0;
+
+// Used to generate the next set of squares
+let nextCol = 0;
+
+// Size of the squares calculated
+let boxWidth;
+let boxHeight;
+
+const simplex = new SimplexNoise();
 
 function setup() {
-  createCanvas(windowWidth, windowHeight / 2);
-  frameRate(20);
+  createCanvas(windowWidth / 1.2, windowHeight / 1.2);
+  frameRate(30);
+
+  boxHeight = height / res;
+  boxWidth = width / res;
 
   createAllSqaures();
 }
 
 function draw() {
   background(0);
+  resetMatrix();
 
-  // createNewCol();
-  createAllSqaures();
-
+  translate(xOffset, 0, 0);
   squareArr.forEach((arr) => {
     arr.forEach((s) => {
       if (s) {
-        // s.display();
-
-        for (let i = 0.9; i > -1; i -= 0.4) {
-          stroke(255 * map(i, -1, 1, 0, 1));
-          s.drawEdge(0, i);
-        }
+        s.drawEdge();
       }
     });
   });
 
   console.log(frameRate());
-  xOffset += 0.01;
+  xOffset -= 3;
+
+  if (abs(squareArr[0][0].position.x - abs(xOffset)) > boxWidth) {
+    shiftSquaresLeft();
+  }
 }
 
-function createNewCol() {
-  for (let x = 0; x < res - 1; x++) {
-    for (let y = 0; y < res; y++) {
-      const oldSqaure = squareArr[x][y];
-
-      const newSqaure = new Square(oldSqaure.position, oldSqaure.size, oldSqaure.offset);
-      newSqaure.cornerValues = squareArr[x + 1][y].cornerValues;
-
-      squareArr[x][y] = newSqaure;
-    }
-  }
-
-  const boxWidth = width / res;
-  const boxHeight = height / res;
-
-  for (let y = 0; y < res; y++) {
-    const pos = createVector((res - 1) * boxWidth, y * boxHeight);
-
-    squareArr[res - 1][y] = new Square(pos, createVector(boxWidth, boxHeight), createVector(xOffset * boxWidth, 0, 0));
-    squareArr[res - 1][y].createCornerValues();
-  }
-
-  xOffset += 1;
-}
-
+// Creates all of the initial sqaures
 function createAllSqaures() {
   squareArr = [];
 
-  const boxWidth = width / res;
-  const boxHeight = height / res;
+  for (let x = 0; x <= res; x++) {
+    createSquareCol(x);
+  }
+}
 
+function shiftSquaresLeft() {
   for (let x = 0; x < res; x++) {
-    squareArr[x] = [];
     for (let y = 0; y < res; y++) {
-      const pos = createVector(x * boxWidth, y * boxHeight);
+      const targetSqaure = squareArr[x + 1][y];
 
-      const newSquare = new Square(pos, createVector(boxWidth, boxHeight), createVector(0, 0, xOffset));
-      newSquare.createCornerValues();
+      const newSquare = new Square(targetSqaure.position, targetSqaure.size, targetSqaure.offset);
+      newSquare.cornerValues = targetSqaure.cornerValues;
+      newSquare.edge = targetSqaure.edge;
 
       squareArr[x][y] = newSquare;
     }
   }
+
+  createSquareCol(res);
+}
+
+function createSquareCol(col) {
+  squareArr[col] = [];
+
+  for (let y = 0; y < res; y++) {
+    const pos = createVector(nextCol * boxWidth, y * boxHeight);
+
+    const newSquare = new Square(pos, createVector(boxWidth, boxHeight), createVector(0, 0, 0));
+    newSquare.createCornerValues(simplex);
+    newSquare.determineEdge(0, 0);
+
+    newSquare.determineEdge(0, 0.4);
+    newSquare.determineEdge(0, -0.4);
+
+    squareArr[col][y] = newSquare;
+  }
+
+  nextCol += 1;
 }

@@ -6,21 +6,23 @@ class Square {
     this.position = position;
     this.size = size;
     this.offset = offset;
+
+    this.edge = [];
   }
 
   // determines the values of the corners based on the position of the square
-  createCornerValues() {
+  createCornerValues(simplex) {
     this.cornerValues = [];
 
     // How fast you cycle over the noise
-    const noiseMultiplier = 0.0075;
+    const noiseMultiplier = 0.0025;
 
     for (let x = 0; x < 2; x++) {
       this.cornerValues[x] = [];
       for (let y = 0; y < 2; y++) {
         const cornerPos = createVector(x * this.size.x + this.position.x + this.offset.x, y * this.size.y + this.position.y + this.offset.y);
 
-        this.cornerValues[x][y] = map(noise(cornerPos.x * noiseMultiplier, cornerPos.y * noiseMultiplier, this.offset.z), 0, 1, -1, 1);
+        this.cornerValues[x][y] = simplex.noise3D(cornerPos.x * noiseMultiplier, cornerPos.y * noiseMultiplier, this.offset.z);
       }
     }
   }
@@ -40,7 +42,7 @@ class Square {
     return parseInt(finalString, 2);
   }
 
-  drawEdge(cutoff, hOffest) {
+  determineEdge(cutoff, hOffest) {
     const lookupIndex = this.convertToBinary(cutoff, hOffest);
 
     // Place holders for the halfway points between corners
@@ -71,11 +73,26 @@ class Square {
     // Converted D
     const dConverted = createVector(0, this.size.y * (1 - c3 / (c3 - c0)));
 
-    push();
-    translate(this.position.x, this.position.y);
-    strokeWeight(1);
-    lookupTable[lookupIndex](aConverted, bConverted, cConverted, dConverted);
-    pop();
+    this.edge.push({
+      func: () => {
+        lookupTable[lookupIndex](aConverted, bConverted, cConverted, dConverted);
+      },
+      hOffest,
+    });
+  }
+
+  // Draws the predetermined edge
+  drawEdge() {
+    const fromColor = color(255, 0, 0);
+    const toColor = color(0, 0, 255);
+    this.edge.forEach((e) => {
+      stroke(lerpColor(fromColor, toColor, map(e.hOffest, -1, 1, 0, 1)));
+      push();
+      translate(this.position.x, this.position.y);
+      strokeWeight(1);
+      e.func();
+      pop();
+    });
   }
 
   // Displays the corners of the square according to their values
